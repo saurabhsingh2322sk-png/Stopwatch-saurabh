@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Stopwatch</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255,255,255,0.08);
+            padding: 40px 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 430px;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 30px;
+        }
+
+        #display {
+            font-size: clamp(35px, 9vw, 48px);
+            font-weight: bold;
+            margin-bottom: 30px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        button {
+            border: none;
+            padding: 13px 20px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+        }
+
+        #start { background: #4c16a3; }
+        #pause { background: #e59b0b; }
+        #reset { background: #dc2626; }
+        #lap { background: #2563eb; }
+
+        button:hover {
+            filter: brightness(1.15);
+        }
+
+        h3 {
+            margin-top: 28px;
+            margin-bottom: 10px;
+        }
+
+        #laps {
+            list-style: none;
+            max-height: 150px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        #laps li {
+            padding: 10px;
+            border-bottom: 1px solid #ffffff30;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>⏱ Offline Stopwatch by SAURABH SINGH</h1>
+
+        <div id="display">00:00:00.000</div>
+
+        <div class="buttons">
+            <button id="start">Start</button>
+            <button id="pause">Pause</button>
+            <button id="reset">Reset</button>
+            <button id="lap">Lap</button>
+        </div>
+
+        <h3>Lap Times</h3>
+        <ul id="laps"></ul>
+    </div>
+
+    <script>
+        const display = document.getElementById("display");
+        const startBtn = document.getElementById("start");
+        const pauseBtn = document.getElementById("pause");
+        const resetBtn = document.getElementById("reset");
+        const lapBtn = document.getElementById("lap");
+        const laps = document.getElementById("laps");
+
+        let startTime = 0;
+        let elapsed = 0;
+        let running = false;
+        let timer = null;
+
+        function formatTime(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const milliseconds = ms % 1000;
+
+            return String(hours).padStart(2, "0") + ":" +
+                   String(minutes).padStart(2, "0") + ":" +
+                   String(seconds).padStart(2, "0") + "." +
+                   String(milliseconds).padStart(3, "0");
+        }
+
+        function updateDisplay() {
+            const current = elapsed +
+                (running ? performance.now() - startTime : 0);
+
+            display.textContent = formatTime(Math.floor(current));
+        }
+
+        startBtn.addEventListener("click", function () {
+            if (running) return;
+
+            startTime = performance.now();
+            running = true;
+
+            timer = setInterval(updateDisplay, 10);
+            updateDisplay();
+        });
+
+        pauseBtn.addEventListener("click", function () {
+            if (!running) return;
+
+            elapsed += performance.now() - startTime;
+            running = false;
+            clearInterval(timer);
+            updateDisplay();
+        });
+
+        resetBtn.addEventListener("click", function () {
+            running = false;
+            clearInterval(timer);
+
+            elapsed = 0;
+            startTime = 0;
+            display.textContent = "00:00:00.000";
+            laps.innerHTML = "";
+        });
+
+        lapBtn.addEventListener("click", function () {
+            const current = elapsed +
+                (running ? performance.now() - startTime : 0);
+
+            const li = document.createElement("li");
+            li.textContent = "Lap " + (laps.children.length + 1)
+                + " — " + formatTime(Math.floor(current));
+
+            laps.prepend(li);
+        });
+    </script>
+</body>
+</html>
